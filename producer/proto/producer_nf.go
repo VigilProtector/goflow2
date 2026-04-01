@@ -330,12 +330,20 @@ func ConvertNetFlowDataSet(flowMessage *ProtoProducerMessage, version uint16, ba
 				return err
 			}
 		case netflow.NFV9_FIELD_OUT_BYTES:
-			if err := DecodeUNumber(v, &(flowMessage.Bytes)); err != nil {
-				return err
+			// Only use OUT_BYTES if IN_BYTES was not already set.
+			// FreeBSD ng_netflow exports OUT_BYTES=0 after valid IN_BYTES,
+			// which would overwrite the correct value. See netsampler/goflow2#186.
+			if flowMessage.Bytes == 0 {
+				if err := DecodeUNumber(v, &(flowMessage.Bytes)); err != nil {
+					return err
+				}
 			}
 		case netflow.NFV9_FIELD_OUT_PKTS:
-			if err := DecodeUNumber(v, &(flowMessage.Packets)); err != nil {
-				return err
+			// Only use OUT_PKTS if IN_PKTS was not already set. See netsampler/goflow2#186.
+			if flowMessage.Packets == 0 {
+				if err := DecodeUNumber(v, &(flowMessage.Packets)); err != nil {
+					return err
+				}
 			}
 
 		// L4
