@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/binary"
 	"fmt"
+	"os"
 	"sync"
 	"time"
 
@@ -311,6 +312,11 @@ func ConvertNetFlowDataSet(flowMessage *ProtoProducerMessage, version uint16, ba
 
 		if df.PenProvided {
 			continue
+		}
+
+		// Debug: log field type and value for bytes/packets fields (1,2,23,24)
+		if df.Type == 1 || df.Type == 2 || df.Type == 23 || df.Type == 24 {
+			fmt.Fprintf(os.Stderr, "GOFLOW2_DEBUG: field_type=%d value_hex=%x value_len=%d\n", df.Type, v, len(v))
 		}
 
 		switch df.Type {
